@@ -65,7 +65,7 @@ describe "an Active Record model which includes PgSearch" do
       context "dynamically" do
         it "raises an exception when invoked" do
           ModelWithPgSearch.pg_search_scope :with_unknown_option,
-            lambda { |*| {:against => :content, :foo => :bar} }
+            ->(*) { {:against => :content, :foo => :bar} }
 
           expect {
             ModelWithPgSearch.with_unknown_option("foo")
@@ -88,7 +88,7 @@ describe "an Active Record model which includes PgSearch" do
       context "dynamically" do
         it "raises an exception when invoked" do
           ModelWithPgSearch.pg_search_scope :with_unknown_using,
-            lambda { |*| {:against => :content, :using => :foo} }
+            ->(*) { {:against => :content, :using => :foo} }
 
           expect {
             ModelWithPgSearch.with_unknown_using("foo")
@@ -111,7 +111,7 @@ describe "an Active Record model which includes PgSearch" do
       context "dynamically" do
         it "raises an exception when invoked" do
           ModelWithPgSearch.pg_search_scope :with_unknown_ignoring,
-            lambda { |*| {:against => :content, :ignoring => :foo} }
+            ->(*) { {:against => :content, :ignoring => :foo} }
 
           expect {
             ModelWithPgSearch.with_unknown_ignoring("foo")
@@ -130,8 +130,7 @@ describe "an Active Record model which includes PgSearch" do
 
         context "dynamically" do
           it "raises an exception when invoked" do
-            ModelWithPgSearch.pg_search_scope :with_unknown_ignoring,
-              lambda { |*| {} }
+            ModelWithPgSearch.pg_search_scope :with_unknown_ignoring, ->(*){ {} }
 
             expect {
               ModelWithPgSearch.with_unknown_ignoring("foo")
