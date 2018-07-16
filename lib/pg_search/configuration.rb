@@ -71,10 +71,6 @@ module PgSearch
       options[:order_within_rank]
     end
 
-    def postgresql_version
-      model.connection.send(:postgresql_version)
-    end
-
     private
 
     attr_reader :options
@@ -100,9 +96,7 @@ module PgSearch
 
       VALID_VALUES.each do |key, values_for_key|
         Array(options[key]).each do |value|
-          unless values_for_key.include?(value)
-            raise ArgumentError, ":#{key} cannot accept #{value}"
-          end
+          raise ArgumentError, ":#{key} cannot accept #{value}" unless values_for_key.include?(value)
         end
       end
     end

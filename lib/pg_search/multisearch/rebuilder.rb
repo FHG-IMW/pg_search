@@ -2,9 +2,7 @@ module PgSearch
   module Multisearch
     class Rebuilder
       def initialize(model, time_source = Time.method(:now))
-        unless model.respond_to?(:pg_search_multisearchable_options)
-          raise ModelNotMultisearchable.new(model)
-        end
+        raise ModelNotMultisearchable.new(model) unless model.respond_to?(:pg_search_multisearchable_options)
 
         @model = model
         @time_source = time_source
@@ -42,7 +40,7 @@ module PgSearch
       end
 
       def rebuild_sql_template
-         <<-SQL.strip_heredoc
+        <<-SQL.strip_heredoc
           INSERT INTO :documents_table (searchable_type, searchable_id, content, created_at, updated_at)
             SELECT :base_model_name AS searchable_type,
                    :model_table.#{primary_key} AS searchable_id,
@@ -65,9 +63,7 @@ module PgSearch
         clause = ""
         if model.column_names.include? model.inheritance_column
           clause = "WHERE"
-          if model.base_class == model
-            clause = "#{clause} #{model.inheritance_column} IS NULL OR"
-          end
+          clause = "#{clause} #{model.inheritance_column} IS NULL OR" if model.base_class == model
           clause = "#{clause} #{model.inheritance_column} = #{model_name}"
         end
         clause

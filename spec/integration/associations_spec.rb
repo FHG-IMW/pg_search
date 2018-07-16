@@ -12,7 +12,7 @@ describe PgSearch do
       with_model :ModelWithoutAgainst do
         table do |t|
           t.string "title"
-          t.belongs_to :another_model
+          t.belongs_to :another_model, :index => false
         end
 
         model do
@@ -49,7 +49,7 @@ describe PgSearch do
       with_model :ModelWithBelongsTo do
         table do |t|
           t.string 'title'
-          t.belongs_to 'another_model'
+          t.belongs_to 'another_model', index: false
         end
 
         model do
@@ -79,7 +79,7 @@ describe PgSearch do
       with_model :AssociatedModelWithHasMany do
         table do |t|
           t.string 'title'
-          t.belongs_to 'ModelWithHasMany'
+          t.belongs_to 'ModelWithHasMany', index: false
         end
       end
 
@@ -99,17 +99,17 @@ describe PgSearch do
       it "returns rows that match the query in either its own columns or the columns of the associated model" do
         included = [
           ModelWithHasMany.create!(:title => 'abcdef', :other_models => [
-                                      AssociatedModelWithHasMany.create!(:title => 'foo'),
-                                      AssociatedModelWithHasMany.create!(:title => 'bar')
-        ]),
+            AssociatedModelWithHasMany.create!(:title => 'foo'),
+            AssociatedModelWithHasMany.create!(:title => 'bar')
+          ]),
           ModelWithHasMany.create!(:title => 'ghijkl', :other_models => [
-                                      AssociatedModelWithHasMany.create!(:title => 'foo bar'),
-                                      AssociatedModelWithHasMany.create!(:title => 'mnopqr')
-        ]),
+            AssociatedModelWithHasMany.create!(:title => 'foo bar'),
+            AssociatedModelWithHasMany.create!(:title => 'mnopqr')
+          ]),
           ModelWithHasMany.create!(:title => 'foo bar')
         ]
         excluded = ModelWithHasMany.create!(:title => 'stuvwx', :other_models => [
-                                               AssociatedModelWithHasMany.create!(:title => 'abcdef')
+          AssociatedModelWithHasMany.create!(:title => 'abcdef')
         ])
 
         results = ModelWithHasMany.with_associated('foo bar')
@@ -131,7 +131,7 @@ describe PgSearch do
 
         results = ModelWithHasMany
                   .limit(1)
-                  .order("#{ModelWithHasMany.quoted_table_name}.id ASC")
+                  .order(Arel.sql("#{ModelWithHasMany.quoted_table_name}.id ASC"))
                   .with_associated('foo bar')
 
         expect(results.map(&:title)).to match_array(included.map(&:title))
@@ -144,22 +144,20 @@ describe PgSearch do
         with_model :FirstAssociatedModel do
           table do |t|
             t.string 'title'
-            t.belongs_to 'ModelWithManyAssociations'
+            t.belongs_to 'ModelWithManyAssociations', index: false
           end
-          model {}
         end
 
         with_model :SecondAssociatedModel do
           table do |t|
             t.string 'title'
           end
-          model {}
         end
 
         with_model :ModelWithManyAssociations do
           table do |t|
             t.string 'title'
-            t.belongs_to 'model_of_second_type'
+            t.belongs_to 'model_of_second_type', index: false
           end
 
           model do
@@ -184,20 +182,20 @@ describe PgSearch do
 
           included = [
             ModelWithManyAssociations.create!(:title => 'abcdef', :models_of_first_type => [
-                                              FirstAssociatedModel.create!(:title => 'foo'),
-                                              FirstAssociatedModel.create!(:title => 'bar')
-          ]),
+              FirstAssociatedModel.create!(:title => 'foo'),
+              FirstAssociatedModel.create!(:title => 'bar')
+            ]),
             ModelWithManyAssociations.create!(:title => 'ghijkl', :models_of_first_type => [
-                                              FirstAssociatedModel.create!(:title => 'foo bar'),
-                                              FirstAssociatedModel.create!(:title => 'mnopqr')
-          ]),
+              FirstAssociatedModel.create!(:title => 'foo bar'),
+              FirstAssociatedModel.create!(:title => 'mnopqr')
+            ]),
             ModelWithManyAssociations.create!(:title => 'foo bar'),
             ModelWithManyAssociations.create!(:title => 'qwerty', :model_of_second_type => matching_second)
           ]
           excluded = [
             ModelWithManyAssociations.create!(:title => 'stuvwx', :models_of_first_type => [
-                                              FirstAssociatedModel.create!(:title => 'abcdef')
-          ]),
+              FirstAssociatedModel.create!(:title => 'abcdef')
+            ]),
             ModelWithManyAssociations.create!(:title => 'qwerty', :model_of_second_type => unmatching_second)
           ]
 
@@ -211,10 +209,9 @@ describe PgSearch do
         with_model :DoublyAssociatedModel do
           table do |t|
             t.string 'title'
-            t.belongs_to 'ModelWithDoubleAssociation'
-            t.belongs_to 'ModelWithDoubleAssociation_again'
+            t.belongs_to 'ModelWithDoubleAssociation', index: false
+            t.belongs_to 'ModelWithDoubleAssociation_again', index: false
           end
-          model {}
         end
 
         with_model :ModelWithDoubleAssociation do
@@ -241,25 +238,25 @@ describe PgSearch do
         it "returns rows that match the query in either its own columns or the columns of the associated model" do
           included = [
             ModelWithDoubleAssociation.create!(:title => 'abcdef', :things => [
-                                                  DoublyAssociatedModel.create!(:title => 'foo'),
-                                                  DoublyAssociatedModel.create!(:title => 'bar')
-          ]),
+              DoublyAssociatedModel.create!(:title => 'foo'),
+              DoublyAssociatedModel.create!(:title => 'bar')
+            ]),
             ModelWithDoubleAssociation.create!(:title => 'ghijkl', :things => [
-                                                  DoublyAssociatedModel.create!(:title => 'foo bar'),
-                                                  DoublyAssociatedModel.create!(:title => 'mnopqr')
-          ]),
+              DoublyAssociatedModel.create!(:title => 'foo bar'),
+              DoublyAssociatedModel.create!(:title => 'mnopqr')
+            ]),
             ModelWithDoubleAssociation.create!(:title => 'foo bar'),
             ModelWithDoubleAssociation.create!(:title => 'qwerty', :thingamabobs => [
-                                                  DoublyAssociatedModel.create!(:title => "foo bar")
-          ])
+              DoublyAssociatedModel.create!(:title => "foo bar")
+            ])
           ]
           excluded = [
             ModelWithDoubleAssociation.create!(:title => 'stuvwx', :things => [
-                                                  DoublyAssociatedModel.create!(:title => 'abcdef')
-          ]),
+              DoublyAssociatedModel.create!(:title => 'abcdef')
+            ]),
             ModelWithDoubleAssociation.create!(:title => 'qwerty', :thingamabobs => [
-                                                  DoublyAssociatedModel.create!(:title => "uiop")
-          ])
+              DoublyAssociatedModel.create!(:title => "uiop")
+            ])
           ]
 
           results = ModelWithDoubleAssociation.with_associated('foo bar')
@@ -279,14 +276,14 @@ describe PgSearch do
 
       with_model :ModelWithAssociation do
         table do |t|
-          t.belongs_to 'another_model'
+          t.belongs_to 'another_model', index: false
         end
 
         model do
           include PgSearch
           belongs_to :another_model, :class_name => 'AssociatedModel'
 
-          pg_search_scope :with_associated, :associated_against => {:another_model => [:title, :author]}
+          pg_search_scope :with_associated, :associated_against => {:another_model => %i[title author]}
         end
       end
 
@@ -332,14 +329,14 @@ describe PgSearch do
       with_model :Model do
         table do |t|
           t.integer 'number'
-          t.belongs_to 'another_model'
+          t.belongs_to 'another_model', index: false
         end
 
         model do
           include PgSearch
-          belongs_to :another_model, :class_name => 'AssociatedModel'
+          belongs_to :another_model, class_name: 'AssociatedModel'
 
-          pg_search_scope :with_associated, :associated_against => {:another_model => :number}
+          pg_search_scope :with_associated, associated_against: {another_model: :number}
         end
       end
 
@@ -406,7 +403,7 @@ describe PgSearch do
     with_model :AssociatedModel do
       table do |t|
         t.string :content
-        t.belongs_to :model_with_association
+        t.belongs_to :model_with_association, index: false
       end
 
       model do
@@ -424,13 +421,13 @@ describe PgSearch do
       excluded_associated_2 = AssociatedModel.create(:content => "baz bar")
 
       included = [
-          ModelWithAssociation.create(:associated_models => [included_associated_1]),
-          ModelWithAssociation.create(:associated_models => [included_associated_2, excluded_associated_1])
+        ModelWithAssociation.create(:associated_models => [included_associated_1]),
+        ModelWithAssociation.create(:associated_models => [included_associated_2, excluded_associated_1])
       ]
 
       excluded = [
-          ModelWithAssociation.create(:associated_models => [excluded_associated_2]),
-          ModelWithAssociation.create(:associated_models => [])
+        ModelWithAssociation.create(:associated_models => [excluded_associated_2]),
+        ModelWithAssociation.create(:associated_models => [])
       ]
 
       relation = AssociatedModel.search_content("foo")
@@ -457,7 +454,7 @@ describe PgSearch do
 
       model do
         include PgSearch
-        pg_search_scope :search, :against => :title, :using => [:tsearch, :trigram]
+        pg_search_scope :search, :against => :title, :using => %i[tsearch trigram]
       end
     end
 
@@ -498,7 +495,7 @@ describe PgSearch do
 
       model do
         include PgSearch
-        pg_search_scope :search, :against => :title, :using => [:tsearch, :trigram]
+        pg_search_scope :search, :against => :title, :using => %i[tsearch trigram]
       end
     end
 
